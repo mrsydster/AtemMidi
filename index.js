@@ -4,13 +4,25 @@ const os = require("os");
 const easymidi = require("easymidi");
 const colors = require("colors");
 const usbDetect = require("usb-detection");
+const { Atem } = require('atem-connection');
+
+const atem = new Atem({ externalLog: console.log });
 
 const terminal = require("./terminal");
 
 // variables
-var controller = "USB MIDI cable:USB MIDI cable MIDI 2 20:1";
+var controller = "USB MIDI cable:USB MIDI cable MIDI 2 24:1";
+var atemConnected = false;
+
+atem.connect('192.168.6.10');
 
 // functions
+function changeProgamInput(input) {
+  atem.changeProgramInput(input).then((res) => {
+    // console.log(res);
+  });
+}
+
 function setMidi() {
   var inputs = easymidi.getInputs();
   var outputs = easymidi.getOutputs();
@@ -57,43 +69,48 @@ function setMidi() {
 
       switch (input) {
         case "0":
-          console.log(1);
+	  changeProgamInput(5);
+          //console.log(1);
           break;
 
         case "1":
-          console.log(2);
+	  changeProgamInput(7);
+          //console.log(2);
           break;
 
         case "2":
-          console.log(3);
+          changeProgamInput(8);
+          //console.log(3);
           break;
 
         case "3":
-          console.log(4);
+	  changeProgamInput(4);
+          //console.log(4);
           break;
 
         case "4":
-          console.log(5);
+	  changeProgamInput(6);
+          //console.log(5);
           break;
 
         case "5":
-          console.log(6);
+          //console.log(6);
           break;
 
         case "6":
-          console.log(7);
+          //console.log(7);
           break;
 
         case "7":
-          console.log(8);
+          //console.log(8);
           break;
 
         case "8":
-          console.log(9);
+          //console.log(9);
           break;
 
         case "9":
-          console.log(10);
+          //console.log(10);
           break;
 
         default:
@@ -128,3 +145,13 @@ usbDetect.on("remove", function (device) {
 
 // Set midi when starting the code
 setMidi();
+
+atem.on('connected', () => {
+    atemConnected = true
+    terminal.status('ATEM connected!');
+});
+
+atem.on("disconnected", () => {
+  atemConnected = false;
+  terminal.status('ATEM disconnected!')
+});
