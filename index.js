@@ -1,148 +1,130 @@
-const easymidi = require('easymidi');
-const colors = require('colors');
-const Obs = require('obs-websocket-js');
+require("dotenv").config();
 
-const terminal = require('./terminal');
+const os = require("os");
+const easymidi = require("easymidi");
+const colors = require("colors");
+const usbDetect = require("usb-detection");
 
-var controller = 'MIDIIN2 (USB MIDI cable) 1';
-var controllerOutput = 'MIDIOUT2 (USB MIDI cable) 2';
+const terminal = require("./terminal");
 
-var inputs = easymidi.getInputs();
-var outputs = easymidi.getOutputs();
+// variables
+var controller = "USB MIDI cable:USB MIDI cable MIDI 2 20:1";
 
-const obs = new Obs();
+// functions
+function setMidi() {
+  var inputs = easymidi.getInputs();
+  var outputs = easymidi.getOutputs();
 
-obs.connect({ address: `127.0.0.1:4444`, password: `banana` })
-    .then(() => {
-        terminal.info('OBS:', 'connected');
-    }).catch(err => {
-        terminal.error(`OBS:`, err.error);
-    });
+  terminal.info("Inputs found:", inputs);
+  terminal.info("Outputs found:", outputs);
 
-terminal.info('Inputs found:', inputs);
-terminal.info('Outputs found:', outputs);
+  terminal.status("Looking for proper input/output...");
 
-terminal.status('Looking for proper input/output...');
-
-for (i = 0, input = null; input = inputs[i++];) {
+  for (i = 0, input = null; (input = inputs[i++]); ) {
     if (~input.indexOf(controller)) {
-        terminal.cheer(`Found matching input "${input}" at index ${i - 1}.`);
-        global.input = new easymidi.Input(input);
-        break;
+      terminal.cheer(`Found matching input "${input}" at index ${i - 1}.`);
+      global.input = new easymidi.Input(input);
+      break;
     }
-}
+  }
 
-for (i = 0, output = null; output = outputs[i++];) {
-    if (~output.indexOf(controllerOutput)) {
-        terminal.cheer(`Found matching output "${output}" at index ${i - 1}.`);
-        global.output = new easymidi.Output(output);
-        break;
+  for (i = 0, output = null; (output = outputs[i++]); ) {
+    if (~output.indexOf(controller)) {
+      terminal.cheer(`Found matching output "${output}" at index ${i - 1}.`);
+      global.output = new easymidi.Output(output);
+      break;
     }
-}
+  }
 
-if (!global.input) {
-    terminal.error(`No controller matching "${controller}" was found. Quitting...`);
-    process.exit();
-}
+  if (!global.input) {
+    terminal.error(`No controller matching "${controller}" was found.`);
+  } else {
+    // // Debugging
+    // input.on("noteon", (args) => terminal.debug("noteon", args));
+    // input.on("poly aftertouch", (args) => terminal.debug("poly aftertouch", args));
+    // input.on("cc", (args) => terminal.debug("cc", args));
+    // input.on("program", (args) => terminal.debug("program", args));
+    // input.on("channel aftertouch", (args) => terminal.debug("channel aftertouch", args));
+    // input.on("pitch", (args) => terminal.debug("pitch", args));
+    // input.on("position", (args) => terminal.debug("position", args));
+    // input.on("mtc", (args) => terminal.debug("mtc", args));
+    // input.on("select", (args) => terminal.debug("select", args));
+    // input.on("sysex", (args) => terminal.debug("sysex", args));
 
-// input.on('noteon', args => terminal.debug('noteon', args));
-// input.on('poly aftertouch', args => terminal.debug('poly aftertouch', args));
-// input.on('cc', args => terminal.debug('cc', args));
-// input.on('program', args => terminal.debug('program', args));
-// input.on('channel aftertouch', args => terminal.debug('channel aftertouch', args));
-// input.on('pitch', args => terminal.debug('pitch', args));
-// input.on('position', args => terminal.debug('position', args));
-// input.on('mtc', args => terminal.debug('mtc', args));
-// input.on('select', args => terminal.debug('select', args));
-// input.on('sysex', args => terminal.debug('sysex', args));
+    // Buttons
+    input.on("program", (params) => {
+      let input = `${params.number}`.substr(-1);
 
-// Knobs
-input.on('program', (params) => {
+      switch (input) {
+        case "0":
+          console.log(1);
+          break;
 
-    let input = `${params.number}`.substr(-1);
+        case "1":
+          console.log(2);
+          break;
 
-    switch (input) {
+        case "2":
+          console.log(3);
+          break;
 
-        case '0':
-            obs.send('SetCurrentScene', { 'scene-name': `1.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
+        case "3":
+          console.log(4);
+          break;
 
-        case '1':
+        case "4":
+          console.log(5);
+          break;
 
-            obs.send('SetCurrentScene', { 'scene-name': `2.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
+        case "5":
+          console.log(6);
+          break;
 
-        case '2':
+        case "6":
+          console.log(7);
+          break;
 
-            obs.send('SetCurrentScene', { 'scene-name': `3.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
+        case "7":
+          console.log(8);
+          break;
 
-        case '3':
+        case "8":
+          console.log(9);
+          break;
 
-            obs.send('SetCurrentScene', { 'scene-name': `4.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '4':
-
-            obs.send('SetCurrentScene', { 'scene-name': `5.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '5':
-
-            obs.send('SetCurrentScene', { 'scene-name': `6.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '6':
-
-            obs.send('SetCurrentScene', { 'scene-name': `7.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '7':
-
-            obs.send('SetCurrentScene', { 'scene-name': `8.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '8':
-
-            obs.send('SetCurrentScene', { 'scene-name': `9.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
-
-        case '9':
-
-            obs.send('SetCurrentScene', { 'scene-name': `10.` })
-                .catch(err => {
-                    console.error(`OBS:`, err);
-                });
-            break;
+        case "9":
+          console.log(10);
+          break;
 
         default:
-            console.log('program ', params);
-    }
+          console.log("program ", params);
+      }
+    });
+  }
+  terminal.debug("-------------------------------------");
+}
+
+// detect usb changes
+usbDetect.startMonitoring();
+
+usbDetect.on("add", function (device) {
+  if (device.deviceName === "USB MIDI cable" || device.deviceName === "USB_MIDI_cable") {
+    terminal.status(`"${device.deviceName}" was connected.`);
+    setMidi();
+  }
 });
+
+usbDetect.on("remove", function (device) {
+  if (device.deviceName === "USB MIDI cable" || device.deviceName === "USB_MIDI_cable") {
+    terminal.error(`"${device.deviceName}" was disconnected.`);
+    if (global.input) {
+      global.input.close();
+    }
+    if (global.output) {
+      global.output.close();
+    }
+  }
+});
+
+// Set midi when starting the code
+setMidi();
